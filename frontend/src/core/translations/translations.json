@@ -1,0 +1,82 @@
+{
+    "pl": {
+        "translation": {
+            "common": {
+                "newMeet": "Nowe spotkanie",
+                "signIn": "Zaloguj się",
+                "signInReturn": "Powrót do logowania",
+                "signUp": "Kliknij tutaj aby założyć konto",
+                "signInByFacebook": "Zaloguj się kontem Facebook",
+                "email": "Email",
+                "password": "Hasło",
+                "newPassword": "Nowe hasło",
+                "passwordRepeat": "Potwierdź hasło",
+                "phoneNumber": "Numer telefonu",
+                "register": "Załóż konto",
+                "settings": "Ustawienia",
+                "passwordChange": "Zmiana hasła",
+                "setImage": "Zdjęcie profilowe",
+                "currentPassword": "Aktualne hasło",
+                "send": "Wyślij",
+                "imageEdit": "Edycja zdjęcia",
+                "upload": "Dodaj",
+                "visit": "Wejdź"
+            },
+            "home": {
+                "header": "Spójrz na świat razem z nami"
+            },
+            "messages": {
+                "emptyEmail": "Proszę podaj swój email!",
+                "emptyPassword": "Proszę podaj swoje hasło!",
+                "validEmail": "Podany email jest niepoprawny!",
+                "validPassword": "Podane hasło jest niepoprawne!",
+                "emptyRepeatPassword": "Proszę potwierdź swoje hasło!",
+                "emptyPhone": "Proszę podaj swój numer telefonu!",
+                "validRepeatPassword": "Wporwadzone hasła się różnią!",
+                "emptyCaptcha": "Proszę zazcznacz, że nie jesteś robotem!",
+                "changePassword": "Hasło zostało zmienione",
+                "copyClipboard": "Skopiowano do schowka"
+            }
+        }
+    },
+    "en": {
+        "translation": {
+            "common": {
+                "newMeet": "New meet",
+                "signIn": "Sign In",
+                "signInReturn": "Back to login",
+                "signUp": "Sign Up",
+                "signInByFacebook": "Login via Facebook",
+                "email": "Email",
+                "password": "Password",
+                "newPassword": "New password",
+                "passwordRepeat": "Confirm password",
+                "phoneNumber": "Phone number",
+                "register": "Sign Up",
+                "settings": "Settings",
+                "passwordChange": "Change password",
+                "setImage": "Photo image",
+                "currentPassword": "Set current password",
+                "send": "Send",
+                "imageEdit": "Image edit",
+                "upload": "Upload",
+                "visit": "Visit"
+            },
+            "home": {
+                "header": "Look at the world with us"
+            },
+            "messages": {
+                "emptyEmail": "Please input your email!",
+                "validEmail": "The input is not valid E-mail!",
+                "validPassword": "The specified password is incorrect!",
+                "emptyPassword": "Please input your Password!",
+                "emptyRepeatPassword": "Please confirm your password!",
+                "validRepeatPassword": "The two passwords that you entered do not match!",
+                "emptyPhone": "Please input your phone number!",
+                "emptyCaptcha": "Please prove that you aren't robot !",
+                "changePassword": "Password has been changed",
+                "copyClipboard": "Copy to clipboard"
+            }
+        }
+    }
+}
