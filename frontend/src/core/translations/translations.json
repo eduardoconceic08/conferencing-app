@@ -20,7 +20,14 @@
                 "send": "Wyślij",
                 "imageEdit": "Edycja zdjęcia",
                 "upload": "Dodaj",
-                "visit": "Wejdź"
+                "visit": "Wejdź",
+                "search": "Wyszukaj",
+                "sound": "Dźwięk",
+                "display": "Obraz",
+                "microphone": "Mikrofon",
+                "speakers": "Głośniki",
+                "camera": "Kamera",
+                "join": "Dołącz"
             },
             "home": {
                 "header": "Spójrz na świat razem z nami"
@@ -35,7 +42,10 @@
                 "validRepeatPassword": "Wporwadzone hasła się różnią!",
                 "emptyCaptcha": "Proszę zazcznacz, że nie jesteś robotem!",
                 "changePassword": "Hasło zostało zmienione",
-                "copyClipboard": "Skopiowano do schowka"
+                "copyClipboard": "Skopiowano do schowka",
+                "emptyResult": "Brak wyników",
+                "joinAsk": "Chcesz dołączyć?",
+                "waitAnswer": "Oczekiwanie na akceptacje..."
             }
         }
     },
@@ -60,7 +70,14 @@
                 "send": "Send",
                 "imageEdit": "Image edit",
                 "upload": "Upload",
-                "visit": "Visit"
+                "visit": "Visit",
+                "search": "Search",
+                "sound": "Sound",
+                "display": "Display",
+                "microphone": "Microphone",
+                "speakers": "Speakers",
+                "camera": "Camera",
+                "join": "Dołącz"
             },
             "home": {
                 "header": "Look at the world with us"
@@ -75,7 +92,10 @@
                 "emptyPhone": "Please input your phone number!",
                 "emptyCaptcha": "Please prove that you aren't robot !",
                 "changePassword": "Password has been changed",
-                "copyClipboard": "Copy to clipboard"
+                "copyClipboard": "Copy to clipboard",
+                "emptyResult": "No results",
+                "joinAsk": "Do you want to join?",
+                "waitAnswer": "Awaiting entry acceptance..."
             }
         }
     }

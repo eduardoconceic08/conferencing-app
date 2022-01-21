@@ -1,0 +1,20 @@
+Wszystkie pokoje użytkownika
+wysyłam: token użytkownika
+dostane:
+id: string;
+    name: string;
+    roomCode: string;
+
+
+Conversation:
+Sprawdź czy uzytkownik jest zalogowany i sprawdz czy pokoj istnieje
+wysyłam
+    roomCode: string;
+Zwróc
+export interface ISingleRoom {
+    id: string;
+    name: string;
+    roomCode: string;
+    roomOwner: string;
+    roomMates: string[];
+}
