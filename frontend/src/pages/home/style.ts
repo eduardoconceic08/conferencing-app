@@ -15,6 +15,7 @@ export const HomeStyled = styled.div`
 
         > .button--section {
             display: flex;
+            position: relative;
         }
     }
     > .right {
@@ -24,5 +25,6 @@ export const HomeStyled = styled.div`
         align-items: center;
         justify-content: center;
         position: relative;
+        overflow: hidden;
     }
 `;
