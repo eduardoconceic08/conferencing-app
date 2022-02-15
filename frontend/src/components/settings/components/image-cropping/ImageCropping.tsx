@@ -6,40 +6,36 @@ import { Upload } from 'antd';
 // hooks
 import { useTranslation } from 'react-i18next';
 import ImgCrop from 'antd-img-crop';
+import { Routes } from 'core/api/routes';
+import { useDispatch } from 'react-redux';
+import { dispatchSetCurrentUserImage } from 'core/store/slices/auth.slice';
 
 interface IProps {
-    handleModalClose?: () => void;
+    handleModalClose: () => void;
 }
 
 const ImageCropping: React.FC<IProps> = ({ handleModalClose }: IProps) => {
     const [fileList, setFileList] = React.useState<any>([]);
     const { t } = useTranslation();
+    const dispatch = useDispatch();
 
-    React.useEffect(() => {
-        // set file List
-        setFileList([
-            {
-                uid: '-1',
-                name: 'image.png',
-                status: 'done',
-                url:
-                    'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png',
-            },
-        ]);
-    }, []);
-
-    const onChange = ({ fileList: newFileList }) => {
-        setFileList(newFileList);
+    const onChange = async ({ file }) => {
+        if (file.status === 'done') {
+            dispatch(dispatchSetCurrentUserImage(file.response.image));
+            handleModalClose();
+        }
     };
 
     return (
         <ImgCrop shape="round">
             <Upload
-                action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
+                action={`${process.env.API_HOST}${Routes.uploadAvatar()}`}
                 listType="picture-card"
+                className="avatar-uploader"
                 fileList={fileList}
                 onChange={onChange}
-                onRemove={(file) => console.log(file)}
+                showUploadList={false}
+                withCredentials
             >
                 {fileList.length < 1 && t('common.upload')}
             </Upload>

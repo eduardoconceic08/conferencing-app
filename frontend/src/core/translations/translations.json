@@ -36,7 +36,10 @@
                 "deleteConversation": "Usuń konwersacje",
                 "searchUserByEmail": "Wyszukaj użytkownika po adresie email",
                 "action": "Akacja",
-                "delete": "Usuń"
+                "delete": "Usuń",
+                "isWriting": "pisze ...",
+                "messages": "Wiadomości",
+                "users": "Użytkownicy"
             },
             "home": {
                 "header": "Spójrz na świat razem z nami"
@@ -57,7 +60,8 @@
                 "waitAnswer": "Oczekiwanie na akceptacje...",
                 "commonError": "Wystąpił nieoczekiwany błąd, przepraszamy",
                 "userCreated": "Użytkownik został utworzony",
-                "deleteConversation": "Wpisz kod pokoju żeby usunać"
+                "deleteConversation": "Wpisz kod pokoju żeby usunać",
+                "noAccessRoom": "Nie masz dostępu do tego pokoju. Zostaniesz przekierowany do strony głównej za ..."
             }
         }
     },
@@ -98,7 +102,10 @@
                 "deleteConversation": "Delete conversation",
                 "searchUserByEmail": "Search user by email",
                 "action": "Action",
-                "delete": "Delete"
+                "delete": "Delete",
+                "isWriting": "is writing ...",
+                "messages": "Messages",
+                "users": "Users"
             },
             "home": {
                 "header": "Look at the world with us"
@@ -119,7 +126,8 @@
                 "waitAnswer": "Awaiting entry acceptance...",
                 "commonError": "An unexpected error has occurred",
                 "userCreated": "User was created",
-                "deleteConversation": "Enter the room code to delete"
+                "deleteConversation": "Enter the room code to delete",
+                "noAccessRoom": "You don't have access to this room. You will be redirected to the home page in ..."
             }
         }
     }

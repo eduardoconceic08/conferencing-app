@@ -6,14 +6,18 @@ import { ConversationStartStyled } from './style';
 import ConversationMessage from 'pages/conversation/containers/conversation-messages';
 import { LeftOutlined } from '@ant-design/icons';
 import { Button } from 'antd';
+import { IUser, IUserList } from 'core/types';
 
-interface IProps {}
-
-const ENDPOINT: string = 'http://127.0.0.1:3000/';
+interface IProps {
+    user: IUser;
+}
 
 const ConversationStart: React.FC<IProps> = (props: IProps) => {
+    const { user } = props;
+
     const [peers, setPeers] = React.useState<{ userId: any; peer: any }[]>([]);
-    const [isMessagesOpen, setMessagesOpen] = React.useState<boolean>(false);
+    const [isMessagesOpen, setMessagesOpen] = React.useState<boolean>(true);
+    const [userList, setUserList] = React.useState<IUserList[]>([]);
 
     const myVideoRef = React.useRef<HTMLVideoElement>(null);
     const divWrapperRef = React.useRef<HTMLDivElement>(null);
@@ -67,15 +71,20 @@ const ConversationStart: React.FC<IProps> = (props: IProps) => {
             });
         });
 
-        mySocket.current.on('user-connected', (userID) => {
+        mySocket.current.on('user-connected', (userID, email) => {
+            if (!mySocket.current) {
+                return;
+            }
+            mySocket.current.emit('user-list', user.email);
             connectToNewUser(userID, myStream.current as MediaStream);
         });
     };
 
     React.useLayoutEffect(() => {
-        mySocket.current = io(ENDPOINT);
+        mySocket.current = io(process.env.API_HOST as string);
         myPeer.current = new Peer(undefined, {
-            host: '127.0.0.1',
+            // host: '127.0.0.1',
+            host: 'localhost',
             port: 3001,
             secure: false,
         });
@@ -84,11 +93,16 @@ const ConversationStart: React.FC<IProps> = (props: IProps) => {
 
         myPeer.current.on('open', (id: string) => {
             if (!mySocket.current) return;
-            mySocket.current.emit('join-room', slug, id);
+            mySocket.current.emit('join-room', slug, id, user.email, user.id);
         });
 
-        mySocket.current.on('user-disconnected', (userId) => {
-            console.log(`User ${userId} has left`);
+        mySocket.current.on('user-list', (data) => {
+            setUserList(data.currentUsers);
+        });
+
+        mySocket.current.on('user-disconnected', (userId, email) => {
+            console.log(`User ${email} has left`);
+            setUserList((prevState) => prevState.filter((el) => el.email !== email));
             if (peers.some((el) => el.userId === userId)) {
                 const peer = peers.find((el) => el.userId === userId);
                 if (!peer) return;
@@ -116,13 +130,21 @@ const ConversationStart: React.FC<IProps> = (props: IProps) => {
         <ConversationStartStyled isMessagesOpen={isMessagesOpen}>
             <div className="video--wrapper" ref={divWrapperRef}>
                 <div className="open--bnt">
-                    <Button type="primary" onClick={() => setMessagesOpen((prev) => !prev)}>
+                    <Button
+                        type="primary"
+                        onClick={() => setMessagesOpen((prev) => !prev)}
+                    >
                         <LeftOutlined />
                     </Button>
                 </div>
                 <video ref={myVideoRef} muted />
             </div>
-            <ConversationMessage isMessagesOpen={isMessagesOpen} />
+            <ConversationMessage
+                userList={userList}
+                isMessagesOpen={isMessagesOpen}
+                ref={mySocket}
+                user={user}
+            />
         </ConversationStartStyled>
     );
 };
