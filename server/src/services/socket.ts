@@ -6,13 +6,12 @@ const SocketService = (io: Server): void => {
     io.on(SocketEvent.Connect, (socket: Socket | any) => {
         console.log('Start new connection');
 
-        socket.on('join-room', (roomId: any, peerId: any, userEmail: any, userId: string) => {
+        socket.on('join-room', (roomId: any, peerId: any, userEmail: any, userId: string, userImage?: string) => {
             socket.user = userEmail;
-            // people[socket.id] = { email: userEmail };
             socket.join(roomId);
 
             socket.to(roomId).broadcast.emit('user-connected', peerId, userEmail);
-            roomService.addUserToConversation(userId, socket.id, userEmail, roomId).then((res) => {
+            roomService.addUserToConversation(userId, socket.id, userEmail, roomId, userImage).then((res) => {
                 io.in(roomId).emit('user-list', res);
             });
 
@@ -22,6 +21,10 @@ const SocketService = (io: Server): void => {
 
             socket.on('send-is-typing', (email: string) => {
                 socket.to(roomId).emit('receive-is-typing', email);
+            });
+
+            socket.on('report-reply-server', (email: string) => {
+                socket.to(roomId).broadcast.emit('report-reply', email);
             });
 
             socket.on('disconnect', () => {

@@ -1,3 +1,5 @@
+import Peer from 'peerjs';
+
 export interface ISingleRoom {
     id: string;
     roomCode: string;
@@ -24,12 +26,20 @@ export interface IMessage {
     message: string;
     author: string;
     date: string;
-    isFile: boolean;
+    resultPath?: string;
+    isImage: boolean;
+    isPdf: boolean;
 }
 
 export interface IUserList {
     email: string;
     socketId: string;
     userId: string;
+    userImage?: string;
     _id: string;
+}
+
+export interface IGuestStream {
+    stream: MediaStream;
+    userCall: Peer.MediaConnection;
 }

@@ -7,7 +7,12 @@ import { IConversationContextShare } from 'pages/conversation/types';
 import { updateDevice } from 'pages/conversation/actions';
 import ConversationStartButton from 'pages/conversation/components/conversation-start-button/ConversationStartButton';
 
-interface IProps {}
+interface IProps {
+    isVideo: boolean;
+    isAudio: boolean;
+    setVideo: any;
+    setAudio: any;
+}
 
 declare global {
     interface Window {
@@ -16,12 +21,18 @@ declare global {
 }
 
 const ConversationPrepare: React.FC<IProps> = (props: IProps) => {
+    const {
+        isAudio, isVideo, setAudio, setVideo,
+    } = props;
     const [isModalOpen, setModalOpen] = React.useState<boolean>(false);
 
     const streamRef = React.useRef<MediaStream | null>(null);
     const videoRef = React.useRef<any>(null);
 
-    const { conversationConfig, dispatch } = React.useContext<IConversationContextShare>(ConversationContext);
+    const {
+        conversationConfig,
+        dispatch,
+    } = React.useContext<IConversationContextShare>(ConversationContext);
 
     const start = async (audioDeviceID?: string, videDeviceID?: string) => {
         if (!videoRef.current) return;
@@ -40,8 +51,6 @@ const ConversationPrepare: React.FC<IProps> = (props: IProps) => {
                 },
                 video: {
                     deviceId: videDeviceID ? { exact: videDeviceID } : undefined,
-                    // width: 600,
-                    // height: 300,
                 },
             };
 
@@ -56,6 +65,7 @@ const ConversationPrepare: React.FC<IProps> = (props: IProps) => {
     };
 
     React.useLayoutEffect(() => {
+        start();
         return () => {
             if (streamRef.current) {
                 streamRef.current.getTracks().forEach((track: MediaStreamTrack) => {
@@ -79,8 +89,11 @@ const ConversationPrepare: React.FC<IProps> = (props: IProps) => {
         <React.Fragment>
             <ConversationPrepareStyled>
                 <UserVideo
+                    isVideo={isVideo}
+                    isAudio={isAudio}
+                    setAudio={setAudio}
+                    setVideo={setVideo}
                     openSettingModal={() => setModalOpen(true)}
-                    start={start}
                     ref={videoRef}
                 />
                 <ConversationStartButton />

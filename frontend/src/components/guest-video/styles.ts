@@ -1,30 +1,12 @@
 import styled from 'styled-components';
 
-interface IProps {
-    isVideo: boolean;
-}
-
-export const VideoStyled = styled.div<IProps>`
+export const VideoStyled = styled.div`
     position: relative;
     width: 600px;
     height: 450px;
     > .user-video {
-        display: ${({ isVideo }: IProps) => (isVideo ? 'block' : 'none')};
         width: 600px;
         height: auto;
-
-        &.disable {
-            display: ${({ isVideo }: IProps) => (isVideo ? 'none' : 'block')};
-            background: black;
-            height: 100%;
-            position: relative;
-          
-           >.avatar{
-             left: 50%;
-             top: 50%;
-             transform: translate(-50%, -50%);
-           }
-        }
     }
     > .audio--container {
         position: absolute;

@@ -1,89 +1,128 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import io from 'socket.io-client';
 import Peer from 'peerjs';
 import { useParams } from 'react-router-dom';
 import { ConversationStartStyled } from './style';
 import ConversationMessage from 'pages/conversation/containers/conversation-messages';
-import { LeftOutlined } from '@ant-design/icons';
-import { Button } from 'antd';
-import { IUser, IUserList } from 'core/types';
+import { LeftOutlined, SoundOutlined, VideoCameraOutlined } from '@ant-design/icons';
+import { Button, notification } from 'antd';
+import { IGuestStream, IUser, IUserList } from 'core/types';
+import * as stream from 'stream';
+import CircleBtn from 'components/circle-btn';
+import GuestVideo from 'components/guest-video';
+import Audio from 'components/audio/Audio';
+import { IConversationContextShare } from 'pages/conversation/types';
+import ConversationContext from 'pages/conversation/provider';
+import useAudio from 'custom--hooks/useAudio';
+import { useTranslation } from 'react-i18next';
 
 interface IProps {
     user: IUser;
+    isVideo: boolean;
+    isAudio: boolean;
 }
 
 const ConversationStart: React.FC<IProps> = (props: IProps) => {
-    const { user } = props;
+    const { user, isVideo, isAudio } = props;
 
-    const [peers, setPeers] = React.useState<{ userId: any; peer: any }[]>([]);
-    const [isMessagesOpen, setMessagesOpen] = React.useState<boolean>(true);
+    const [isMessagesOpen, setMessagesOpen] = React.useState<boolean>(false);
     const [userList, setUserList] = React.useState<IUserList[]>([]);
+    const [peopleStreams, setPeopleStreams] = React.useState<IGuestStream[]>([]);
 
     const myVideoRef = React.useRef<HTMLVideoElement>(null);
-    const divWrapperRef = React.useRef<HTMLDivElement>(null);
-    const myStream = React.useRef<MediaStream | undefined>(undefined);
+    const myStreamRef = React.useRef<MediaStream | undefined>(undefined);
 
     const mySocket = React.useRef<SocketIOClient.Socket | null>(null);
     const myPeer = React.useRef<Peer | null>(null);
 
+    const [isVideoPlay, setVideoPlay] = React.useState<boolean>(isVideo);
+    const [isAudioPlay, setAudioPlay] = React.useState<boolean>(isAudio);
+
     const { slug } = useParams();
 
-    const addVideoStream = (video: HTMLVideoElement, stream) => {
-        if (!divWrapperRef.current) return;
-        video.srcObject = stream;
-        video.autoplay = true;
-        divWrapperRef.current.append(video);
+    const { conversationConfig } = useContext<IConversationContextShare>(
+        ConversationContext,
+    );
+
+    const { t } = useTranslation();
+
+    const [microPower] = useAudio(isAudioPlay, conversationConfig.devices.microphoneDeviceID);
+
+    const newUserComeIn = (userId: string, myStreamTemp: MediaStream) => {
+        if (!myPeer.current) return;
+        const call: Peer.MediaConnection = myPeer.current.call(
+            userId,
+            myStreamTemp,
+            {
+                metadata: {
+                    userEmail: user.email,
+                    userId: user.id,
+                },
+            },
+        ); // Call to call usera ktory przybyl
+        /**
+         * Nasluchiwanie przyjscia nowego uzytkownika przez juz obecnych
+         */
+        call.on('stream', (userVideoStream) => {
+            setPeopleStreams((prev) => [
+                ...prev,
+                { stream: userVideoStream, userCall: call },
+            ]);
+        });
     };
 
-    function connectToNewUser(userId: string, stream: MediaStream) {
-        if (!myPeer.current) return;
-        const call: Peer.MediaConnection = myPeer.current.call(userId, stream);
-        const video = document.createElement('video');
-
-        call.on('stream', (userVideoStream) => {
-            addVideoStream(video, userVideoStream);
-        });
-        call.on('close', () => {
-            video.remove();
-        });
-        peers.push({ userId, peer: call });
-        setPeers(peers);
-    }
-
     const startMyStream = async () => {
-        if (
-            !myVideoRef.current
-            || !divWrapperRef.current
-            || !mySocket.current
-            || !myPeer.current
-        ) return;
-        myStream.current = await navigator.mediaDevices.getUserMedia({
+        if (!myVideoRef.current || !mySocket.current || !myPeer.current) return;
+        myStreamRef.current = await navigator.mediaDevices.getUserMedia({
             audio: false,
             video: true,
         });
-        addVideoStream(myVideoRef.current, myStream.current);
+        myVideoRef.current.srcObject = myStreamRef.current;
 
+        const videoTracks: MediaStreamTrack[] = myStreamRef.current.getVideoTracks();
+        videoTracks.forEach((track) => {
+            track.enabled = isVideo;
+        });
+
+        const audioTracks: MediaStreamTrack[] = myStreamRef.current.getAudioTracks();
+        audioTracks.forEach((track) => {
+            track.enabled = isAudio;
+        });
+
+        /**
+         * Akcja kiedy dochodzimy do pokoju gdzie sa uzytkownicy. Wysylamy im nasz stream
+         * i odbieramy wszystkich innych obecnych
+         */
         myPeer.current.on('call', (call) => {
-            call.answer(myStream.current);
-            const video = document.createElement('video');
+            call.answer(myStreamRef.current); // jezeli ktos dojdzie wyslij mu swoj stream
             call.on('stream', (userVideoStream) => {
-                addVideoStream(video, userVideoStream);
+                // odbierz wszystkie streamy obecnych juz userow
+                setPeopleStreams((prev) => [
+                    ...prev,
+                    { stream: userVideoStream, userCall: call },
+                ]);
             });
         });
 
-        mySocket.current.on('user-connected', (userID, email) => {
-            if (!mySocket.current) {
+        mySocket.current.on('user-connected', (newUserPeerId: string, newUserEmail: string) => {
+            if (!mySocket.current || !myStreamRef.current) {
                 return;
             }
             mySocket.current.emit('user-list', user.email);
-            connectToNewUser(userID, myStream.current as MediaStream);
+            newUserComeIn(newUserPeerId, myStreamRef.current);
         });
     };
+
+    const renderMessage = (email: string) => (
+        <span>
+            <b className="mr-2">{email}</b>
+            {t('messages.wantSpeak')}
+        </span>
+    );
 
     React.useLayoutEffect(() => {
         mySocket.current = io(process.env.API_HOST as string);
         myPeer.current = new Peer(undefined, {
-            // host: '127.0.0.1',
             host: 'localhost',
             port: 3001,
             secure: false,
@@ -93,42 +132,90 @@ const ConversationStart: React.FC<IProps> = (props: IProps) => {
 
         myPeer.current.on('open', (id: string) => {
             if (!mySocket.current) return;
-            mySocket.current.emit('join-room', slug, id, user.email, user.id);
+            mySocket.current.emit('join-room', slug, id, user.email, user.id, user.image);
         });
 
         mySocket.current.on('user-list', (data) => {
             setUserList(data.currentUsers);
         });
 
-        mySocket.current.on('user-disconnected', (userId, email) => {
-            console.log(`User ${email} has left`);
-            setUserList((prevState) => prevState.filter((el) => el.email !== email));
-            if (peers.some((el) => el.userId === userId)) {
-                const peer = peers.find((el) => el.userId === userId);
-                if (!peer) return;
-                peer.peer.close();
-                setPeers(peers.filter((el) => el.userId !== userId));
-            }
+        mySocket.current.on('report-reply', (email: string) => {
+            notification.info({
+                message: renderMessage(email),
+                placement: 'topLeft',
+                duration: 2,
+
+            });
         });
 
         return () => {
-            if (
-                !myStream.current
-                || !myVideoRef.current
-                || !mySocket.current
-                || !myPeer.current
-            ) return;
+            if (!myVideoRef.current || !mySocket.current || !myPeer.current || !myStreamRef.current) return;
             myPeer.current.destroy();
             mySocket.current.close();
-            const tracks: MediaStreamTrack[] = myStream.current.getTracks();
+            const tracks: MediaStreamTrack[] = myStreamRef.current.getTracks();
             tracks.forEach((track) => track.stop());
             myVideoRef.current.srcObject = null;
         };
-    }, [myStream, divWrapperRef, mySocket, myVideoRef]);
+    }, [mySocket, myVideoRef]);
+
+    React.useEffect(() => {
+        if (!mySocket.current) return;
+
+        mySocket.current.on('user-disconnected', (userPeerId, email) => {
+            setUserList((prevState) => prevState.filter((el) => el.email !== email));
+            const peerForClose:
+                | { stream: MediaStream; userCall: Peer.MediaConnection }
+                | undefined = peopleStreams.find(
+                    (el) => el.userCall.peer === userPeerId,
+                );
+            if (!peerForClose) return;
+            setPeopleStreams((prev) =>
+                prev.filter((el) => el.userCall.peer !== userPeerId));
+            peerForClose.userCall.close();
+        });
+    }, [peopleStreams]);
+
+    const renderGuestUser = React.useCallback(() => {
+        return peopleStreams.map((guestStream) => (
+            <GuestVideo key={guestStream.userCall.peer} peopleStream={guestStream} />));
+    }, [peopleStreams]);
+
+    const handleVideoClick = () => {
+        if (!myStreamRef.current) return;
+        const temp: boolean = !isVideoPlay;
+        setVideoPlay(temp);
+        const tracks: MediaStreamTrack[] = myStreamRef.current.getVideoTracks();
+        tracks.forEach((track) => {
+            track.enabled = temp;
+        });
+    };
+
+    const handleAudioClick = () => {
+        if (!myStreamRef.current) return;
+        const temp: boolean = !isAudioPlay;
+        setAudioPlay(temp);
+        const tracks: MediaStreamTrack[] = myStreamRef.current.getAudioTracks();
+        tracks.forEach((track) => {
+            track.enabled = temp;
+        });
+    };
 
     return (
-        <ConversationStartStyled isMessagesOpen={isMessagesOpen}>
-            <div className="video--wrapper" ref={divWrapperRef}>
+        <ConversationStartStyled isMessagesOpen={isMessagesOpen} className="conversation">
+            <div className="video--wrapper">
+                <div className="user--video">
+                    <video ref={myVideoRef} muted autoPlay />
+                    <div className="tools--wrapper">
+                        <CircleBtn onClick={handleVideoClick} isTurnOn={isVideoPlay} className="m-2">
+                            <VideoCameraOutlined />
+                        </CircleBtn>
+                        <CircleBtn onClick={handleAudioClick} isTurnOn={isAudioPlay} className="m-2">
+                            <SoundOutlined />
+                        </CircleBtn>
+                    </div>
+                    <Audio microPower={microPower} />
+                </div>
+                {renderGuestUser()}
                 <div className="open--bnt">
                     <Button
                         type="primary"
@@ -137,7 +224,6 @@ const ConversationStart: React.FC<IProps> = (props: IProps) => {
                         <LeftOutlined />
                     </Button>
                 </div>
-                <video ref={myVideoRef} muted />
             </div>
             <ConversationMessage
                 userList={userList}
